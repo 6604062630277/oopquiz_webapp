@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OOP Quiz App</title>
+  <style>
+    :root {
+      --primary:#2563eb;
+      --primary-light:#60a5fa;
+      --primary-dark:#1e3a8a;
+      --bg:#f1f5f9;
+      --text:#1e293b;
+      --muted:#64748b;
+      --card:#ffffff;
+      --success:#22c55e;
+      --danger:#ef4444;
+    }
+
+    *{box-sizing:border-box; transition:all .2s ease;}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family: "Prompt", system-ui, -apple-system, sans-serif;
+    }
+    .container{
+      max-width:760px;
+      margin:40px auto;
+      padding:0 20px;
+    }
+
+    /* ==== Card ==== */
+    .card{
+      background:var(--card);
+      border-radius:20px;
+      box-shadow:0 10px 25px rgba(0,0,0,.08);
+      padding:30px;
+      border:2px solid #bfdbfe;
+    }
+
+    h1{margin:0 0 12px; font-size:26px}
+    .muted{color:var(--muted)}
+    .row{display:flex; gap:14px; flex-wrap:wrap}
+    input[type="text"]{
+      flex:1; padding:12px 14px; border:1px solid #cbd5e1; border-radius:12px; font-size:16px
+    }
+    button{
+      cursor:pointer; border:0; border-radius:12px; padding:12px 18px; font-size:16px;
+      background:var(--primary); color:#fff; transition:.15s;
+    }
+    button:hover{background:var(--primary-dark)}
+    button:disabled{opacity:.5; cursor:not-allowed}
+    button.ghost{background:#e0f2fe; color:var(--primary-dark)}
+    button.ghost:hover{background:#bfdbfe;}
+
+    /* ==== Question Title ==== */
+    .title{
+      font-size:20px;
+      margin:12px 0 18px;
+      color:#fff;
+      background:linear-gradient(90deg, var(--primary-dark), var(--primary-light));
+      padding:12px 16px;
+      border-radius:10px;
+      font-weight:700;
+      letter-spacing:0.3px;
+      box-shadow:0 3px 10px rgba(37,99,235,0.15);
+    }
+
+    /* ==== Choices ==== */
+    .choices{display:grid; gap:10px}
+    .choice{
+      padding:12px 14px;
+      border:2px solid #e2e8f0;
+      border-radius:12px;
+      background:#fff;
+      text-align:left;
+      font-size:16px;
+      color:#1e293b;              /* ✅ สีตัวอักษรเข้มขึ้น */
+      font-weight:500;
+      box-shadow:0 2px 4px rgba(0,0,0,0.04); /* ✅ เพิ่มความเด่น */
+    }
+    .choice:hover{
+      border-color:#60a5fa;
+      background:#f0f9ff;          /* ✅ พื้นหลังฟ้าอ่อนเมื่อ hover */
+    }
+    .choice.selected{
+      outline:3px solid #93c5fd;
+      background:#eff6ff;          /* ✅ สีเมื่อเลือก */
+    }
+    .choice.correct{
+      background:#ecfdf5;
+      border-color:#16a34a;
+      color:#065f46;               /* ✅ เขียวเข้ม */
+      font-weight:600;
+    }
+    .choice.incorrect{
+      background:#fef2f2;
+      border-color:#dc2626;
+      color:#7f1d1d;               /* ✅ แดงเข้ม */
+      font-weight:600;
+    }
+
+    /* ==== Progress & Score ==== */
+    .footer{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-top:20px;
+    }
+    .pill{
+      padding:6px 12px;
+      border-radius:999px;
+      background:#dbeafe;
+      color:var(--primary-dark);
+      font-size:14px;
+      font-weight:500;
+    }
+
+    /* ==== Result ==== */
+    .result{display:grid; gap:10px; margin-top:16px}
+    .score{font-size:24px; font-weight:600}
+
+    .hide{display:none}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Start Screen -->
+    <section id="start" class="card">
+      <h1>🧠 OOP Quiz</h1>
+      <p class="muted">กรอกชื่อแล้วเริ่มทำแบบทดสอบได้เลย ไม่ต้องใช้ฐานข้อมูล</p>
+      <div class="row" style="margin-top:12px">
+        <input id="playerName" type="text" placeholder="พิมพ์ชื่อของคุณ (ไม่บังคับ)"/>
+        <button id="startBtn">เริ่มทำแบบทดสอบ</button>
+      </div>
+    </section>
+
+    <!-- Quiz Screen -->
+    <section id="quiz" class="card hide">
+      <div class="pill" id="progress">ข้อ 1/1</div>
+      <div class="title" id="questionText">คำถาม</div>
+      <div id="choices" class="choices"></div>
+      <div id="explain" class="muted" style="margin-top:10px"></div>
+      <div class="footer">
+        <span id="score" class="pill">คะแนน: 0</span>
+        <div class="row">
+          <button id="submitBtn">ตรวจคำตอบ</button>
+          <button id="nextBtn" class="ghost" disabled>ข้อต่อไป ➜</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Result Screen -->
+    <section id="result" class="card hide">
+      <h1>สรุปผล</h1>
+      <div class="result">
+        <div class="score">คะแนนรวม: <span id="finalScore">0</span></div>
+        <div class="muted">ตอบถูก <span id="correctCount">0</span> จาก <span id="totalCount">0</span> ข้อ (<span id="percent">0</span>%)</div>
+      </div>
+      <div style="margin-top:16px" class="row">
+        <button id="restartBtn" class="ghost">เริ่มใหม่</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
